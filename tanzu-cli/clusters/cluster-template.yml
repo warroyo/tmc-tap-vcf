@@ -1,0 +1,78 @@
+#@ load("@ytt:data", "data")
+#@ profile = data.values.profile
+#@ values = getattr(data.values.clusters, profile)
+fullName:
+  managementClusterName: #@ values.mgmt_cluster
+  name: #@ values.name
+  provisionerName: #@ values.provisioner
+spec:
+  clusterGroupName: #@ data.values.clusterGroupName
+  topology:
+    clusterClass: tanzukubernetescluster
+    controlPlane:
+      metadata: {}
+      osImage:
+        arch: amd64
+        name: ubuntu
+        version: "20.04"
+      replicas: #@ values.cp_count
+    network:
+      pods:
+        cidrBlocks:
+        - 172.20.0.0/16
+      serviceDomain: cluster.local
+      services:
+        cidrBlocks:
+        - 10.96.0.0/16
+    nodePools:
+    - info:
+        name: md-0
+      spec:
+        class: node-pool
+        metadata: {}
+        osImage:
+          arch: amd64
+          name: ubuntu
+          version: "20.04"
+        overrides:
+        - name: nodePoolVolumes
+          value:
+          - capacity:
+              storage: #@ values.containerd_storage
+            mountPath: /var/lib/containerd
+            name: containerd
+            storageClass: #@ values.storage_class
+          - capacity:
+              storage: #@ values.kubelet_storage
+            mountPath: /var/lib/kubelet
+            name: kubelet
+            storageClass: #@ values.storage_class
+        - name: vmClass
+          value: #@ values.worker_vm_class
+        - name: storageClass
+          value: #@ values.storage_class
+        replicas: #@ values.worker_count
+    variables:
+    - name: controlPlaneCertificateRotation
+      value:
+        activate: false
+        daysBefore: 90
+    - name: defaultStorageClass
+      value: #@ values.storage_class
+    - name: ntp
+      value: #@ values.ntp
+    - name: storageClass
+      value: #@ values.storage_class
+    - name: storageClasses
+      value:
+      - #@ values.storage_class
+    - name: vmClass
+      value: #@ values.cp_vm_class
+    version: #@ values.k8s_version
+type:
+  kind: TanzuKubernetesCluster
+  package: vmware.tanzu.manage.v1alpha1.managementcluster.provisioner.tanzukubernetescluster
+  version: v1alpha1
+
+
+
