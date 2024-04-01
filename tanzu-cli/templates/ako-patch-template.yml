@@ -1,0 +1,17 @@
+#@ load("@ytt:data", "data")
+
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ako
+spec:
+  values:
+    NetworkSettings:
+      nsxtT1LR: #@ data.values.ako.nsxtT1LR
+      vipNetworkList: #@ data.values.ako.vipNetworkList
+    AKOSettings:
+      clusterName: ${cluster_name}
+    ControllerSettings:
+      serviceEngineGroupName:  #@ data.values.ako.serviceEngineGroupName
+      cloudName: #@ data.values.ako.cloudName
+      controllerHost: #@ data.values.ako.controllerHost

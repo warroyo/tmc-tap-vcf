@@ -8,7 +8,7 @@ spec:
     path: #@ "infra-gitops/clustergroups/" + data.values.clusterGroupName
     prune: true
     source:
-      name: infra-gitops
+      name: infra-base
       namespace: tanzu-continuousdelivery-resources
 type:
   kind: Kustomization

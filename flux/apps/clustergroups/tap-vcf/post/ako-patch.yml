@@ -1,0 +1,17 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ako
+spec:
+  values:
+    NetworkSettings:
+      nsxtT1LR: /infra/tier-1s/t1_aae18e07-6764-40cd-89ab-9d936c971f60_rtr
+      vipNetworkList:
+      - networkName: vcf-ako-net-domain-c8:1ddcbef6-d1c1-4084-8bb3-8c1d3aebd931
+        cidr: 10.214.167.176/28
+    AKOSettings:
+      clusterName: ${cluster_name}
+    ControllerSettings:
+      serviceEngineGroupName: domain-c8:1ddcbef6-d1c1-4084-8bb3-8c1d3aebd931
+      cloudName: tanzu
+      controllerHost: 10.214.181.32

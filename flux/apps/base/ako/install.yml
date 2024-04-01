@@ -1,0 +1,47 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: ako
+  namespace: tanzu-continuousdelivery-resources
+spec:
+  type: "oci"
+  interval: 5m0s
+  url: oci://projects.registry.vmware.com/ako/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ako
+  namespace: tanzu-continuousdelivery-resources
+spec:
+  releaseName: ako
+  targetNamespace: avi-system
+  interval: 10m
+  chart:
+    spec:
+      chart: ako
+      version: 1.11.3
+      sourceRef:
+        kind: HelmRepository
+        name: ako
+        namespace: tanzu-continuousdelivery-resources
+  values:
+    NetworkSettings:
+      nsxtT1LR: ""
+      vipNetworkList:
+      - networkName: 
+        cidr:
+    AKOSettings:
+      clusterName: tap-run
+      cniPlugin: antrea
+    ControllerSettings:
+      serviceEngineGroupName: 
+      controllerVersion: '22.1.5' # The controller API version
+      cloudName: # The configured cloud name on the Avi controller.
+      controllerHost: '' # IP address or Hostname of Avi Controller
+      tenantName: admin   # Name of the tenant where all the AKO objects will be created in AVI.
+    L7Settings:
+      serviceType: NodePortLocal
+
+  install:
+    createNamespace: true

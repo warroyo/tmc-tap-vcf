@@ -2,3 +2,6 @@ secrets:
   github_pat:
     username:
     password: 
+  avi:
+    username:
+    password:
