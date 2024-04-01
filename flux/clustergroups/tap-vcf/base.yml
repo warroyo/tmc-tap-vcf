@@ -43,11 +43,34 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
+  name: group-apps-post-tap
+  namespace: tanzu-continuousdelivery-resources
+spec:
+  interval: 1m
+  path: ./flux/apps/clustergroups/tap-vcf/post-tap
+  prune: true
+  dependsOn:
+    - name: group-apps-pre
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: cluster-name-secret
+    substitute:
+      cluster_group: "tap-vcf"
+  sourceRef:
+    kind: GitRepository
+    namespace: tanzu-continuousdelivery-resources
+    name: infra-base
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
   name: clustergroup-gitops
   namespace: tanzu-continuousdelivery-resources
 spec:
   dependsOn:
-  - name: group-apps-post
+  - name: group-apps-post-tap
     namespace: tanzu-continuousdelivery-resources
   interval: 1m
   path: flux/clustergroups/common/per-cluster

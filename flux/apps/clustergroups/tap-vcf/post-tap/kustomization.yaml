@@ -4,10 +4,4 @@ generatorOptions:
   disableNameSuffixHash: true
 
 resources:
-- ../../../base/ako
-
-
-patches:
-- path: ako-patch.yml
-  target:
-    kind: HelmRelease
+- ../../../base/cluster-issuers

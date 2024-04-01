@@ -5,7 +5,7 @@ fullName:
 spec:
   atomicSpec:
     interval: 300s
-    path: #@ "infra-gitops/clustergroups/" + data.values.clusterGroupName
+    path: #@ "flux/clustergroups/" + data.values.clusterGroupName
     prune: true
     source:
       name: infra-base

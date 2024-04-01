@@ -1,0 +1,21 @@
+#@ load("@ytt:data", "data")
+#@ profile = data.values.profile
+#@ values = getattr(data.values.clusters, profile)
+fullName:
+  managementClusterName: #@ values.mgmt_cluster
+  provisionerName: #@ values.provisioner
+  clusterName: #@ values.name
+  name: kustomize-controller
+  namespaceName: flux-package-install
+spec:
+  inlineValues:
+    namespace: tanzu-kustomize-controller
+  packageRef:
+    packageMetadataName: fluxcd-kustomize-controller.tanzu.vmware.com
+    versionSelection:
+      constraints: 0.32.0+vmware.1-tkg.4
+  roleBindingScope: CLUSTER
+type:
+  kind: Install
+  package: vmware.tanzu.manage.v1alpha1.cluster.namespace.tanzupackage.install
+  version: v1alpha1
