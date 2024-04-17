@@ -86,22 +86,6 @@ tanzu tmc cluster create -f generated/$PROFILE-cluster.yaml
 ### Enable helm and flux
 The below commands enable flux at the cluster group level and install the source, helm, and kustomize controllers. These will be installed automatically on all clusters in this cluster group.
 
-#### Temporary workaround prior to TAP 1.9
-
-Due to a compatibility issue with TMC provided flux source controller and TAP <=1.8 we need to enable the flux source controller and kustomize controller separately from the cluster group level on each cluster. Do the below process on each cluster profile.
-
-```bash
-export $PROFILE=<profile-name>
-ytt --data-values-file tanzu-cli/values --data-value profile=$PROFILE -f tanzu-cli/cd/source-controller.yml > generated/$PROFILE-sc.yaml
-tanzu tmc apply -f generated/$PROFILE-sc.yaml
-```
-
-```bash
-export $PROFILE=<profile-name>
-ytt --data-values-file tanzu-cli/values --data-value profile=$PROFILE -f tanzu-cli/cd/kustomize-controller.yml > generated/$PROFILE-kc.yaml
-tanzu tmc apply -f generated/$PROFILE-kc.yaml
-```
-
 #### Enable at the cluster group level
 
 ```bash
