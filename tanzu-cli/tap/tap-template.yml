@@ -14,9 +14,9 @@ spec:
       orgId: #@ data.values.orgId
     inlineValues:
       package_overlays:
-      - name: envoy
+      - name: contour
         secrets:
-          - name: envoy-lb-clas
+          - name: envoy-lb-class
       excluded_packages:
       - fluxcd.source.controller.tanzu.vmware.com
       appliveview:
@@ -30,6 +30,12 @@ spec:
       shared:
         ingress_domain: #@ data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
         ingress_issuer: #@ data.values.tap.profiles.view.ingress_issuer
+      contour:
+        envoy:
+          service:
+            annotations:
+              external-dns.alpha.kubernetes.io/hostname: #@ "*." + data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
+
       tap_gui:
         app_config:
           auth:
@@ -131,7 +137,7 @@ spec:
           subPath: #@ "ns-provisioner/clusters/"+ data.values.clusters.run.name + "/namespaces"
           url: #@ data.values.gitrepo
       package_overlays:
-      - name: envoy
+      - name: contour
         secrets:
           - name: envoy-lb-class
       profile: run
@@ -143,7 +149,7 @@ spec:
     packageRef:
       packageMetadataName: tap.tanzu.vmware.com
       versionSelection:
-        constraints: 1.7.0
+        constraints: #@ data.values.tap.version
     tapProfile: run  
 type:
   kind: Solution

@@ -42,6 +42,8 @@ spec:
       tenantName: admin   # Name of the tenant where all the AKO objects will be created in AVI.
     L7Settings:
       serviceType: NodePortLocal
+    L4Settings:
+      autoFQDN: disabled
 
   install:
     createNamespace: true

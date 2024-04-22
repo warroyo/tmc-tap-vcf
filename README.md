@@ -309,8 +309,8 @@ tanzu tmc tanzupackage tap create -n $TAP_NAME -f generated/tap.yaml
 
 You can change the values in the values.yml and update the solution through the cli as well.
 
-```
+```bash
 export TAP_NAME=$(cat tanzu-cli/values/values.yml| yq .tap.name)
 tanzu tmc tanzupackage tap get -n $TAP_NAME -o yaml | sed '1d' | ytt --data-values-file - --data-values-file tanzu-cli/values -f tanzu-cli/overlays/generation.yml -f tanzu-cli/tap/tap-template.yml > generated/tap.yaml
-
+tanzu tmc tanzupackage tap update -n $TAP_NAME -f generated/tap.yaml
 ```
