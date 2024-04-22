@@ -3,6 +3,10 @@
 This guide's purpose is to quickly stand up TAP using TMC in a VCF environment. This will include dependent resources like DNS and cert management. 
 
 
+## Pre-reqs
+
+* AVI configured with a DNS VS
+
 ## Tools
 
 * Tanzu CLI
@@ -56,6 +60,20 @@ ytt --data-values-file tanzu-cli/values -f tanzu-cli/secrets/avi-credentials.yml
 tanzu tmc secret create -f generated/avi-secret.yaml -s clustergroup
 ```
 
+#### Create the registry creds secret
+1. update the `registry` section with your credentials in the sensitive values
+2.  create the cluster group secret
+
+```bash
+ytt --data-values-file tanzu-cli/values -f tanzu-cli/secrets/registry-creds.yml > generated/registry-creds.yaml
+tanzu tmc secret create -f generated/registry-creds.yaml -s clustergroup
+```
+3. export the secret
+
+```bash
+ytt --data-values-file tanzu-cli/values -f tanzu-cli/secrets/registry-export.yml > generated/registry-export.yaml
+tanzu tmc secret export create -f generated/registry-export.yaml -s clustergroup
+```
 
 ### Create the mutation policies
 
@@ -138,3 +156,161 @@ Through the gitops process above we will be installing a few supporting services
 `AKO` -  we will configure AKO in the clusters. In the default TKGs setup that we are using AVI and AKO are already in use for layer 4 networking however it is done in the para virtuaized model. This means that the supervisor cluster is running AKO. For this setup we want to take advantage of a few extra features like automtic DNS and Layer 7 ingress. By installing in the clusters directly we can hand off the AKO responsibilties to the in cluster AKO controller and get access to more features.
 
 `Step-CA`  -  this is a [certificate server](https://smallstep.com/docs/step-ca/installation/#kubernetes) we can install into k8s that is compatibel with cert-manager for generating certs. Rather than using cert manager to generate cluster specific self signed certs we will use this server to grant intermediate issuer authority for our organizations root CA. Read more about the process [here](https://smallstep.com/docs/step-ca/#limitations) and [here](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/index.html#the-secure-way). 
+
+
+### setting up the root CA
+
+In this example we will mimic creating an intermediate CA that step CA will use to sign and issue certs. In an enterprise environment usually there is already an existing CA, this process will be used to securely authorize step-ca to create certs on it's behalf. All of the details can be found [here](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/). You can skip the first piece of creating the intial CA if you already have a corporate CA.
+
+#### Generate intial CA to mimic enterpise CA
+
+**if you already have a CA skip this step**
+
+Be sure to save any generated passwords in these steps!
+
+1. run the below command and let it generate a password for you. This will generate our fake root cert to mimic an enterpise cert.
+```bash
+export STEPPATH=./companyroot
+step ca init  --deployment-type='standalone' --name='companyroot' --dns='localhost' --address='127.0.0.1:8443' --provisioner='admin@company.com' 
+```
+
+The above command has created our mock enterpsie CA
+
+2. we need to generate some default things before using our enterpise root ca. This step generates those defaults as defined in the docs above. 
+```bash
+export STEPPATH=./intermediateca
+step ca init  --deployment-type='standalone' --name='intermediateroot' --dns='step-certificates.step-ca.svc.cluster.local' --address=':9000' --provisioner='acme' --acme
+```
+
+3. swap out the default root ca with out "companyroot" ca
+
+```bash
+rm intermediateca/secrets/root_ca_key
+cp companyroot/certs/root_ca.crt  intermediateca/certs/root_ca.crt
+```
+
+4. generate a new signing key and intermediate certificate signed by our mock compnay root ca.
+```bash
+step certificate create "company k8s intermediate" intermediate.csr intermediate_ca_key --csr
+```
+
+5. sign the intermediate with the companyroot ca
+```bash
+step certificate sign --profile intermediate-ca intermediate.csr companyroot/certs/root_ca.crt companyroot/secrets/root_ca_key > intermediate.crt
+```
+
+6. replace the default intermediates with the newly signed ones.
+
+```bash
+mv intermediate.crt intermediateca/certs/intermediate_ca.crt
+mv intermediate_ca_key intermediateca/secrets/intermediate_ca_key
+rm intermediate.csr
+```
+
+#### Create an intermediate from the enterprise root CA
+
+**if you are using the above mock approach skip this step**
+
+We will be using the ["secure way"](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/#the-secure-way) laid out in the step-ca docs.
+
+1. follow the steps in the doc above.
+
+#### Generate necessary helm values
+
+
+1. add your provisioner and decrypt secrets to the sensitive values file. This will be the provisioner password and the ca password that should have been set during the previosu step. These are added under the `steps-ca` section.
+
+
+
+2. create the intermediate ca key secret
+
+```bash
+ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-secrets.yml -f intermediateca/. > generated/intermediate-ca-key.yml
+tanzu tmc secret create -f generated/intermediate-ca-key.yml -s clustergroup
+
+```
+
+
+3. create the secret that hold the certs
+
+```bash
+ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-certs.yml -f intermediateca/. > generated/intermediate-ca-certs.yml
+tanzu tmc secret create -f generated/intermediate-ca-certs.yml -s clustergroup
+```
+
+4. create the secret that holds the configs
+
+```bash
+ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-config.yml -f intermediateca/. > generated/intermediate-ca-config.yml
+tanzu tmc secret create -f generated/intermediate-ca-config.yml -s clustergroup
+```
+5. create the secret that hold the ca decrypt password. this was the password set when we ran the step-ca init commands above.
+
+```bash
+ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-password.yml -f intermediateca/. > generated/intermediate-ca-password.yml
+tanzu tmc secret create -f generated/intermediate-ca-password.yml -s clustergroup
+```
+
+6. create the secret that hold the provisioner decrypt password. this was the password set when we ran the step-ca init commands above.
+
+```bash
+ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-prov-password.yml -f intermediateca/. > generated/intermediate-ca-prov-password.yml
+tanzu tmc secret create -f generated/intermediate-ca-prov-password.yml -s clustergroup
+```
+
+7. create the issuer config secret that flux will use to populate values in the issuer
+
+```bash
+ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-issuer.yml -f intermediateca/. > generated/intermediate-ca-issuer-config.yml
+tanzu tmc secret create -f generated/intermediate-ca-issuer-config.yml -s clustergroup
+```
+
+## Install TAP
+
+
+### Add the cluster url and ca to the values file
+
+We need to pull back this info from the cli and update our values file. This is used so the view cluster can connect to the other clusters. 
+
+run this for build and run profiles
+
+**Build:**
+
+```
+export PROFILE=build
+export MGMT_CLUSTER=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.mgmt_cluster)
+export CLUSTER_NAME=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.name)
+export PROVISIONER=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.provisioner)
+tanzu tmc cluster kubeconfig get $CLUSTER_NAME -m $MGMT_CLUSTER -p $PROVISIONER | ytt --data-values-file - --data-value profile=$PROFILE -f tanzu-cli/overlays/clusterdetails.yml -f tanzu-cli/values/values.yml --output-files tanzu-cli/values
+```
+
+**Run:** 
+
+```
+export PROFILE=run
+export MGMT_CLUSTER=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.mgmt_cluster)
+export CLUSTER_NAME=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.name)
+export PROVISIONER=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.provisioner)
+tanzu tmc cluster kubeconfig get $CLUSTER_NAME -m $MGMT_CLUSTER -p $PROVISIONER | ytt --data-values-file - --data-value profile=$PROFILE -f tanzu-cli/overlays/clusterdetails.yml -f tanzu-cli/values/values.yml --output-files tanzu-cli/values
+```
+
+### Create the TAP solution
+
+The below command with generate our TMC TAP install file from the values and then create the solution. This will start the install across all clusters. you can check the status in the TMC UI.
+
+```
+export TAP_NAME=$(cat tanzu-cli/values/values.yml| yq .tap.name)
+ytt --data-values-file tanzu-cli/values -f tanzu-cli/tap/tap-template.yml > generated/tap.yaml
+tanzu tmc tanzupackage tap create -n $TAP_NAME -f generated/tap.yaml
+```
+
+
+### Update the TAP solution
+
+You can change the values in the values.yml and update the solution through the cli as well.
+
+```
+export TAP_NAME=$(cat tanzu-cli/values/values.yml| yq .tap.name)
+tanzu tmc tanzupackage tap get -n $TAP_NAME -o yaml | sed '1d' | ytt --data-values-file - --data-values-file tanzu-cli/values -f tanzu-cli/overlays/generation.yml -f tanzu-cli/tap/tap-template.yml > generated/tap.yaml
+
+```

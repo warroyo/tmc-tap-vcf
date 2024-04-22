@@ -5,3 +5,7 @@ secrets:
   avi:
     username:
     password:
+  step-ca:
+    provisioner_pass: 
+    ca_pass:
+    ca_data: 

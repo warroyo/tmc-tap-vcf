@@ -19,9 +19,39 @@ spec:
   chart:
     spec:
       chart: step-certificates
-      version: 1.11.3
+      version: 1.26.0
       sourceRef:
         kind: HelmRepository
         name: smallstep
         namespace: tanzu-continuousdelivery-resources
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              version: v1
+              kind: Service
+              name: step-ca-step-certificates
+            patch: |
+              - op: add
+                path: /spec/loadBalancerClass
+                value: ako.vmware.com/avi-lb
   values:
+    image:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/smallstep/step-ca
+    bootstrap:
+      image:
+        repository: harbor-repo.vmware.com/dockerhub-proxy-cache/smallstep/step-ca-bootstrap
+      secrets: false
+      enabled: false
+      configmaps: false
+    existingSecrets:
+      enabled: true
+      ca: true
+      certsAsSecret: true
+      configAsSecret: true
+    inject:
+      enabled: false
+    service:
+      type: LoadBalancer
+      annotations:
+        external-dns.alpha.kubernetes.io/hostname: step-ca.tap-vcf.h2o-4-20916.h2o.vmware.com

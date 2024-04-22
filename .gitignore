@@ -4,3 +4,8 @@ generated/*.yaml
 generated/*.yml
 generated/*.json
 values.yml
+companyroot
+intermediateca
+intermediate.crt
+intermediate.csr
+intermediate_ca_key

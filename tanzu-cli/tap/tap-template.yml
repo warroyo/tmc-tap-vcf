@@ -1,8 +1,5 @@
 #@ load("@ytt:data", "data")
 
-#@ view_agent = "eks."+ data.values.clusters.view.credName + "." + data.values.clusters.view.region + "." + data.values.clusters.view.name
-#@ build_agent = "eks."+ data.values.clusters.build.credName + "." + data.values.clusters.build.region + "." + data.values.clusters.build.name
-#@ run_agent = "eks."+ data.values.clusters.run.credName + "." + data.values.clusters.run.region + "." + data.values.clusters.run.name
 
 fullName:
   name: #@ data.values.tap.name
@@ -11,15 +8,11 @@ meta:
 spec:
   clusterPackageData:
   - clusterFullName:
-      managementClusterName: eks
-      name: #@ view_agent
-      provisionerName: eks
+      managementClusterName: #@ data.values.clusters.view.mgmt_cluster
+      name: #@ data.values.clusters.view.name
+      provisionerName: #@ data.values.clusters.view.provisioner
       orgId: #@ data.values.orgId
     inlineValues:
-      package_overlays:
-      - name: cert-manager
-        secrets:
-          - name: cert-man-sa-arn
       excluded_packages:
       - fluxcd.source.controller.tanzu.vmware.com
       appliveview:
@@ -31,7 +24,7 @@ spec:
         ns_for_export_app_cert: '*'
       profile: view
       shared:
-        ingress_domain: #@ data.values.tap.profiles.view.ingress_domain
+        ingress_domain: #@ data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
         ingress_issuer: #@ data.values.tap.profiles.view.ingress_issuer
       tap_gui:
         app_config:
@@ -45,9 +38,9 @@ spec:
         constraints: #@ data.values.tap.version
     tapProfile: view
   - clusterFullName:
-      managementClusterName: eks
-      name: #@ build_agent
-      provisionerName: eks
+      managementClusterName: #@ data.values.clusters.build.mgmt_cluster
+      name: #@ data.values.clusters.build.name
+      provisionerName: #@ data.values.clusters.build.provisioner
       orgId: #@ data.values.orgId
     clusterUrl: #@ data.values.tap.profiles.build.clusterUrl
     clusterCaCert: #@ data.values.tap.profiles.build.clusterCA
@@ -56,9 +49,6 @@ spec:
       deployed_through_tmc: true
       excluded_packages:
       - fluxcd.source.controller.tanzu.vmware.com
-      buildservice:
-        kp_default_repository: #@ data.values.tap.profiles.build.ecr.server + "/" + data.values.tap.profiles.build.ecr.tbs_repo
-        kp_default_repository_aws_iam_role_arn:  #@ data.values.tap.profiles.build.aws_tbs_role_arn
       grype:
         metadataStore:
           authSecret:
@@ -67,9 +57,8 @@ spec:
           caSecret:
             importFromNamespace: metadata-store-secrets
             name: store-ca-cert
-          url: #@ "https://metadata-store." + data.values.tap.profiles.view.ingress_domain
+          url: #@ "https://metadata-store." + data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
       namespace_provisioner:
-        aws_iam_role_arn: #@ data.values.tap.profiles.build.aws_workload_role_arn
         additional_sources:
         - git:
             ref: origin/main
@@ -98,11 +87,12 @@ spec:
           repository_owner: #@ data.values.gitrepo_owner
           server_address: https://github.com/
           ssh_secret: github-secret
-        registry:
-          repository: #@ data.values.tap.profiles.build.ecr.workload_repo
-          server: #@ data.values.tap.profiles.build.ecr.server
-      ootb_templates:
-        iaas_auth: true
+        shared:
+          image_registry:
+           project_path: #@ data.values.tap.profiles.build.registry.server + "/" + data.values.tap.profiles.build.registry.project
+           secret:
+            name: tap-vcf-registry-creds
+            namespace: tap-install 
       profile: build
     packageRef:
       packageMetadataName: tap.tanzu.vmware.com
@@ -110,9 +100,9 @@ spec:
         constraints: #@ data.values.tap.version
     tapProfile: build  
   - clusterFullName:
-      managementClusterName: eks
-      name: #@ run_agent
-      provisionerName: eks
+      managementClusterName: #@ data.values.clusters.run.mgmt_cluster
+      name: #@ data.values.clusters.run.name
+      provisionerName: #@ data.values.clusters.run.provisioner
       orgId: #@ data.values.orgId
     clusterUrl: #@ data.values.tap.profiles.run.clusterUrl
     clusterCaCert: #@ data.values.tap.profiles.run.clusterCA
@@ -142,7 +132,7 @@ spec:
           - name: cert-man-sa-arn
       profile: run
       shared:
-        ingress_domain: #@ data.values.tap.profiles.run.ingress_domain
+        ingress_domain: #@ data.values.tap.profiles.run.ingress_domain + "." +data.values.base_domain
         ingress_issuer: #@ data.values.tap.profiles.run.ingress_issuer
       tap_telemetry:
         customer_entitlement_account_number: ""

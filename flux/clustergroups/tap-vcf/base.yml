@@ -55,6 +55,8 @@ spec:
     substituteFrom:
       - kind: Secret
         name: cluster-name-secret
+      - kind: Secret
+        name: step-ca-issuer-config
     substitute:
       cluster_group: "tap-vcf"
   sourceRef:
