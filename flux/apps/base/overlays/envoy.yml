@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: envoy-lb-class
+  namespace: tap-install
+  annotations:
+    kapp.k14s.io/change-group: tap-overlays
+type: Opaque
+stringData:
+  envoy-lb-class.yaml: |-
+    #@ load("@ytt:overlay", "overlay")
+    #@overlay/match by=overlay.subset({"kind": "Service", "metadata": {"name": "envoy"}})
+    ---
+    spec:
+      #@overlay/match missing_ok=True
+      loadBalancerClass: ako.vmware.com/avi-lb

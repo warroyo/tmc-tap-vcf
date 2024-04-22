@@ -13,6 +13,10 @@ spec:
       provisionerName: #@ data.values.clusters.view.provisioner
       orgId: #@ data.values.orgId
     inlineValues:
+      package_overlays:
+      - name: envoy
+        secrets:
+          - name: envoy-lb-clas
       excluded_packages:
       - fluxcd.source.controller.tanzu.vmware.com
       appliveview:
@@ -127,9 +131,9 @@ spec:
           subPath: #@ "ns-provisioner/clusters/"+ data.values.clusters.run.name + "/namespaces"
           url: #@ data.values.gitrepo
       package_overlays:
-      - name: cert-manager
+      - name: envoy
         secrets:
-          - name: cert-man-sa-arn
+          - name: envoy-lb-class
       profile: run
       shared:
         ingress_domain: #@ data.values.tap.profiles.run.ingress_domain + "." +data.values.base_domain
