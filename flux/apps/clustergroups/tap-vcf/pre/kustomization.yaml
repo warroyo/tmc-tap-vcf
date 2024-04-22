@@ -5,5 +5,5 @@ generatorOptions:
 
 resources:
 - ../../../base/cluster-name-secret/
-- ../../../base/tap-overlays
+- ../../../base/overlays
 - initial-namespaces.yml
