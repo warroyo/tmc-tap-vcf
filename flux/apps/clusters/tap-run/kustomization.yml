@@ -4,7 +4,7 @@ generatorOptions:
   disableNameSuffixHash: true
 
 resources:
-- ../../../base/cluster-issuers
+- ../../base/cluster-issuers
 
 
 patches:
