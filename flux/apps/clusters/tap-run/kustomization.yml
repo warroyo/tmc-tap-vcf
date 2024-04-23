@@ -17,7 +17,6 @@ patches:
       - op: replace
         path: /metadata/name
         value: step-ca-avi
-      patch: |-
       - op: replace
         path: /spec/acme/solves/http01/ingress/ingressClassName
         value: avi-lb
