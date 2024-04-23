@@ -11,6 +11,9 @@ spec:
   postBuild:
     substitute:
       cluster_name: ${cluster_name}
+    substituteFrom:
+      - kind: Secret
+        name: step-ca-issuer-config
   sourceRef:
     kind: GitRepository
     namespace: tanzu-continuousdelivery-resources
