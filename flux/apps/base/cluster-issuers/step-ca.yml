@@ -16,4 +16,4 @@ spec:
           podTemplate:
             spec:
               imagePullSecrets:
-              - name: api-portal-image-pull-secret
+              - name: image-pull-creds

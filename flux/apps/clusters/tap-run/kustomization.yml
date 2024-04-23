@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- ../../../base/cluster-issuers
+
+
+patches:
+  - target:
+      group: cert-manager.io
+      version: v1
+      kind: ClusterIssuer
+      name: step-ca
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: step-ca-avi
+      patch: |-
+      - op: replace
+        path: /spec/acme/solves/http01/ingress/ingressClassName
+        value: avi-lb
