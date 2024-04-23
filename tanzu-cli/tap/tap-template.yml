@@ -24,7 +24,6 @@ spec:
       ceip_policy_disclosed: true
       deployed_through_tmc: true
       metadata_store:
-        ingress_issuer: tap-ingress-selfsigned
         ns_for_export_app_cert: '*'
       profile: view
       shared:
@@ -55,6 +54,13 @@ spec:
     clusterUrl: #@ data.values.tap.profiles.build.clusterUrl
     clusterCaCert: #@ data.values.tap.profiles.build.clusterCA
     inlineValues:
+      amr:
+        observer:
+          auth:
+            kubernetes_service_accounts:
+              enable: true
+          cloudevent_handler:
+            endpoint: #@ "https://amr-cloudevent-handler." + data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
       ceip_policy_disclosed: true
       deployed_through_tmc: true
       excluded_packages:
@@ -86,6 +92,16 @@ spec:
           url: #@ data.values.gitrepo
       supply_chain: "testing_scanning"
       ootb_supply_chain_testing_scanning:
+        supported_workloads:
+        - type: web
+          cluster_config_template_name: config-template
+        - type: server
+          cluster_config_template_name: server-template
+        - type: worker
+          cluster_config_template_name: worker-template
+        - type: avi-web
+          cluster_config_template_name: avi-web-template
+
         gitops:
           commit_strategy: pull_request
           pull_request:
