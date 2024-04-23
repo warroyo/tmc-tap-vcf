@@ -5,6 +5,7 @@ generatorOptions:
 
 resources:
 - ../../base/cluster-issuers
+- placeholder-secrets.yml
 
 patchesStrategicMerge:
   - issuer-patch.yml

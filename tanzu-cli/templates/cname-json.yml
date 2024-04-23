@@ -1,0 +1,23 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.all
+---
+static_dns_records:
+  #@overlay/append
+  - description: run cluster wildcard
+    fqdn: 
+    - #@ data.values.tap.profiles.run.ingress_domain +"."+ data.values.base_domain
+    cname:
+      cname: #@ "wildcard." + data.values.tap.profiles.run.ingress_domain +"."+ data.values.base_domain
+    type: DNS_RECORD_CNAME
+    ttl: 10
+    wildcard_match: true
+  - description: run cluster wildcard
+    fqdn: 
+    - #@ data.values.tap.profiles.view.ingress_domain +"."+ data.values.base_domain
+    cname:
+      cname: #@ "wildcard." + data.values.tap.profiles.view.ingress_domain +"."+ data.values.base_domain
+    type: DNS_RECORD_CNAME
+    ttl: 10
+    wildcard_match: true

@@ -122,32 +122,6 @@ AKO has some very specific environment variables that are needed. this below ytt
 ytt --data-values-file tanzu-cli/values -f tanzu-cli/templates/ako-patch-template.yml > flux/apps/clustergroups/tap-vcf/post/ako-patch.yml
 ```
 
-### Bootstrap cluster with gitops
-
-This step configures the cluster group to use this git repo as the source for flux, specifically the `flux` folder. The gitops setup is done at the cluster group level so we don't need to individually bootstrap every cluster. This allows us to easily install things like cluster issuers,tap overlays, workloads and deliverables. Really it can be used to add anything to your clusters through gitops.  
-
-before creating the TMC objects, you will need to rename the folders in `flux/clusters` to match your cluster names. Also if your cluster group name is different than `tap-vcf` you will need to rename the folder in `flux/clustergroups` along with the paths in the `flux/clustergroups/<group-name>/base.yml`.
-
-create the gitrepo in TMC
-
-```bash
-ytt --data-values-file tanzu-cli/values -f tanzu-cli/cd/git-repo-template.yml > generated/gitrepo.yaml
-tanzu tmc continuousdelivery gitrepository create -f generated/gitrepo.yaml -s clustergroup
-```
-
-create the base kustomization that will bootstrap the clusters and setup any initial infra.
-
-
-```bash
-ytt --data-values-file tanzu-cli/values -f tanzu-cli/cd/kust-template.yml > generated/kust.yaml
-tanzu tmc continuousdelivery kustomization create -f generated/kust.yaml -s clustergroup
-```
-
-at this point clusters should start syncing in multiple kustomizations. You can check their status using the below command. there will be some in a failed state until the TAP install is done. 
-
-```bash
-kubectl get kustomizations -A
-```
 
 ### Supporting Services
 
@@ -265,6 +239,53 @@ ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-issuer.yml
 tanzu tmc secret create -f generated/intermediate-ca-issuer-config.yml -s clustergroup
 ```
 
+### Bootstrap cluster with gitops
+
+This step configures the cluster group to use this git repo as the source for flux, specifically the `flux` folder. The gitops setup is done at the cluster group level so we don't need to individually bootstrap every cluster. This allows us to easily install things like cluster issuers,tap overlays, workloads and deliverables. Really it can be used to add anything to your clusters through gitops.  
+
+before creating the TMC objects, you will need to rename the folders in `flux/clusters` to match your cluster names. Also if your cluster group name is different than `tap-vcf` you will need to rename the folder in `flux/clustergroups` along with the paths in the `flux/clustergroups/<group-name>/base.yml`.
+
+create the gitrepo in TMC
+
+```bash
+ytt --data-values-file tanzu-cli/values -f tanzu-cli/cd/git-repo-template.yml > generated/gitrepo.yaml
+tanzu tmc continuousdelivery gitrepository create -f generated/gitrepo.yaml -s clustergroup
+```
+
+create the base kustomization that will bootstrap the clusters and setup any initial infra.
+
+
+```bash
+ytt --data-values-file tanzu-cli/values -f tanzu-cli/cd/kust-template.yml > generated/kust.yaml
+tanzu tmc continuousdelivery kustomization create -f generated/kust.yaml -s clustergroup
+```
+
+at this point clusters should start syncing in multiple kustomizations. You can check their status using the below command. there will be some in a failed state until the TAP install is done. 
+
+```bash
+kubectl get kustomizations -A
+```
+
+### Create the static DNS records
+
+Becuase we are using AVI for DNS, there is a step required to add some CNAME records into AVI. This is becuase the AVI DNS integration with AKO does not support wildcards. To get around this we will use the supported AKO L$ dns integration to create a dynamic A record and then create a static CNAME record that is a wildcard. Thsi way if the IP changes, AKO will update it and we don't need to manually update records.
+
+
+1. get the dns vs uuid
+
+```bash
+export VS_NAME='<your dns vs here>'
+export VS_UUID=$(curl -k -H "Content-Type: application/json" -H "x-avi-version: 22.1.5"  -XGET -u 'admin:VMware1!' "https://10.214.181.32/api/virtualservice?name=$VS_NAME" | jq -r '.results[0].uuid')
+```
+
+
+2. create the records
+
+
+```bash
+curl -k -H "Content-Type: application/json" -H "x-avi-version: 22.1.5"  -XGET -u 'admin:VMware1!' https://10.214.181.32/api/virtualservice/$VS_UUID | ytt --data-values-file tanzu-cli/values  -f tanzu-cli/templates/cname-json.yml -f- -o json | curl -k -H "Content-Type: application/json" -H "x-avi-version: 22.1.5"  -X PUT -u 'admin:VMware1!' --json @- https://10.214.181.32/api/virtualservice/$VS_UUID
+```
+
 ## Install TAP
 
 
@@ -293,6 +314,7 @@ export CLUSTER_NAME=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.na
 export PROVISIONER=$(cat tanzu-cli/values/values.yml | yq .clusters.$PROFILE.provisioner)
 tanzu tmc cluster kubeconfig get $CLUSTER_NAME -m $MGMT_CLUSTER -p $PROVISIONER | ytt --data-values-file - --data-value profile=$PROFILE -f tanzu-cli/overlays/clusterdetails.yml -f tanzu-cli/values/values.yml --output-files tanzu-cli/values
 ```
+
 
 ### Create the TAP solution
 

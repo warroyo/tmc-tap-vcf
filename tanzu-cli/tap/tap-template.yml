@@ -30,11 +30,11 @@ spec:
       shared:
         ingress_domain: #@ data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
         ingress_issuer: #@ data.values.tap.profiles.view.ingress_issuer
-      #! contour:
-      #!   envoy:
-      #!     service:
-      #!       annotations:
-      #!         external-dns.alpha.kubernetes.io/hostname: #@ "*." + data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
+      contour:
+        envoy:
+          service:
+            annotations:
+              external-dns.alpha.kubernetes.io/hostname: #@  "wildcard." + data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
 
       tap_gui:
         app_config:
@@ -144,6 +144,11 @@ spec:
       shared:
         ingress_domain: #@ data.values.tap.profiles.run.ingress_domain + "." +data.values.base_domain
         ingress_issuer: #@ data.values.tap.profiles.run.ingress_issuer
+      contour:
+        envoy:
+          service:
+            annotations:
+              external-dns.alpha.kubernetes.io/hostname: #@  "wildcard." + data.values.tap.profiles.run.ingress_domain + "." + data.values.base_domain
       tap_telemetry:
         customer_entitlement_account_number: ""
     packageRef:
