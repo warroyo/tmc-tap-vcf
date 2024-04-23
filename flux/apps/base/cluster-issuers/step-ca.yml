@@ -12,7 +12,7 @@ spec:
     solvers:
     - http01:
         ingress:
-          ingressClassName: avi-lb
+          ingressClassName: contour
           podTemplate:
             spec:
               imagePullSecrets:
