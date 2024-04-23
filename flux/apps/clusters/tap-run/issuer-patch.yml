@@ -3,6 +3,8 @@ kind: ClusterIssuer
 metadata:
   name: step-ca
 spec:
+  privateKeySecretRef:
+    name: step-ca-key-avi
   acme:
     solvers:
     - http01:
