@@ -6,7 +6,7 @@ metadata:
   namespace: tanzu-continuousdelivery-resources
 spec:
   interval: 2m
-  path: ./apps/clusters/${cluster_name}
+  path: flux/apps/clusters/${cluster_name}
   prune: true
   postBuild:
     substitute:
