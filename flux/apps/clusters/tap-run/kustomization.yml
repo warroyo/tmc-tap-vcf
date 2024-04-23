@@ -6,6 +6,8 @@ generatorOptions:
 resources:
 - ../../base/cluster-issuers
 
+patchesStrategicMerge:
+  - issuer-patch.yml
 
 patches:
   - target:
@@ -17,6 +19,3 @@ patches:
       - op: replace
         path: /metadata/name
         value: step-ca-avi
-      - op: replace
-        path: /spec/acme/solvers/0/ingress/ingressClassName
-        value: avi-lb
