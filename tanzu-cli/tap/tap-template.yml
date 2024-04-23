@@ -112,11 +112,11 @@ spec:
           repository_name: #@ data.values.gitrepo_name
           repository_owner: #@ data.values.gitrepo_owner
           server_address: https://github.com/
-          ssh_secret: github-secret
-        shared:
-          image_registry:
-           project_path: #@ data.values.tap.profiles.build.registry.server + "/" + data.values.tap.profiles.build.registry.project
-           secret:
+          credentials_secret: github-secret
+      shared:
+        image_registry:
+          project_path: #@ data.values.tap.profiles.build.registry.server + "/" + data.values.tap.profiles.build.registry.project
+          secret:
             name: tap-vcf-registry-creds
             namespace: tap-install 
       profile: build
