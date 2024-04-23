@@ -13,3 +13,7 @@ spec:
     - http01:
         ingress:
           ingressClassName: avi-lb
+          podTemplate:
+            spec:
+              imagePullSecrets:
+              - name: api-portal-image-pull-secret
