@@ -86,13 +86,8 @@ spec:
       ootb_supply_chain_testing_scanning:
         carvel_package:
           workflow_enabled: true
-          gitops_subpath: packages
+          gitops_subpath: flux/apps/base/packages
           openapiv3_enabled: true
-          #! parameters:
-          #! - selector:
-          #!     matchLabels:
-          #!       apps.tanzu.vmware.com/workload-type: avi-web
-
         image_scanner_template_name: image-vulnerability-scan-trivy
         image_scanning_cli:
           image: registry.tanzu.vmware.com/vmware-tap-packages/tap-packages@sha256:31d36a8582a75b042dc12aea0808f822e27747a2f8103af0f0c52ef8d68a8bf0
