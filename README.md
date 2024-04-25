@@ -171,7 +171,7 @@ mkdir -p companyroot/certs
     export STEPPATH=./companyroot
     step ca init  --deployment-type='standalone' --name='companyroot' --dns='localhost' --address='127.0.0.1:8443' --provisioner='admin@company.com' 
     ```
-   2. if you do have a enterprise root, copy your compnay root cert into the directory
+   2. if you do have a enterprise root, copy your company root cert into the directory
 
     ```bash
     cp companyca.crt companyroot/certs/root_ca.crt
