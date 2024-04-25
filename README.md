@@ -16,6 +16,7 @@ Here is a list of the things that this project does
 * sets up Flux for gitops of everything
 * uses TMC opaque secrets as a simple secret provider
 * uses carvel package supply chain to enable AVI l7 ingress for workloads with automated certs
+* intergates package deploys with flux
 * deploys a sample workload using automated certs and dns provided by the above features
 
 ## Pre-reqs
