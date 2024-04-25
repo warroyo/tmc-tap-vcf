@@ -141,7 +141,7 @@ ytt --data-values-file tanzu-cli/values -f tanzu-cli/templates/ako-patch-templat
 ```
 
 
-### Supporting Services
+## Supporting Services
 
 Through the gitops process above we will be installing a few supporting services. These supporting services will allow us to get more public cloud like fucntionality in our VCF environment. Below is the list of what we are configuring and why.
 
@@ -150,13 +150,13 @@ Through the gitops process above we will be installing a few supporting services
 `Step-CA`  -  this is a [certificate server](https://smallstep.com/docs/step-ca/installation/#kubernetes) we can install into k8s that is compatibel with cert-manager for generating certs. Rather than using cert manager to generate cluster specific self signed certs we will use this server to grant intermediate issuer authority for our organizations root CA. Read more about the process [here](https://smallstep.com/docs/step-ca/#limitations) and [here](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/index.html#the-secure-way). 
 
 
-### setting up the root CA
+## setting up the root CA
 
 In this example we will mimic creating an intermediate CA that step CA will use to sign and issue certs. In an enterprise environment usually there is already an existing CA, this process will be used to securely authorize step-ca to create certs on it's behalf. All of the details can be found [here](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/). You can skip the first piece of creating the intial CA if you already have a corporate CA.
 
-#### Generate intial CA to mimic enterpise CA
+### Generate intial CA to mimic enterpise CA
 
-**if you already have a CA skip this step**
+<span style="color: red">**if you already have a CA skip this step**</span>
 
 Be sure to save any generated passwords in these steps!
 
@@ -168,46 +168,68 @@ step ca init  --deployment-type='standalone' --name='companyroot' --dns='localho
 
 The above command has created our mock enterpsie CA
 
-2. we need to generate some default things before using our enterpise root ca. This step generates those defaults as defined in the docs above. 
+
+### Get the enterprise root CA
+
+<span style="color: red">**if you are using the above mock approach skip this step**</span>
+1. make directory structure 
+
+```bash
+mkdir -p companyroot/certs
+```
+2. copy your compnay root cert into the directory
+
+```bash
+cp companyca.crt companyroot/certs/root_ca.crt
+```
+
+### Create the new intermediate from the root
+
+
+We will be using the ["secure way"](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/#the-secure-way) laid out in the step-ca docs.
+
+
+1. we need to generate some default things before using our enterpise root ca. This step generates those defaults as defined in the docs above. 
 ```bash
 export STEPPATH=./intermediateca
 step ca init  --deployment-type='standalone' --name='intermediateroot' --dns='step-certificates.step-ca.svc.cluster.local' --address=':9000' --provisioner='acme' --acme
 ```
 
-3. swap out the default root ca with out "companyroot" ca
+2. swap out the default root ca with out "companyroot" ca
 
 ```bash
 rm intermediateca/secrets/root_ca_key
 cp companyroot/certs/root_ca.crt  intermediateca/certs/root_ca.crt
 ```
 
-4. generate a new signing key and intermediate certificate signed by our mock compnay root ca.
+3. generate a new signing key and intermediate certificate signed by our compnay root ca.
 ```bash
 step certificate create "company k8s intermediate" intermediate.csr intermediate_ca_key --csr
 ```
 
-5. sign the intermediate with the companyroot ca
-```bash
-step certificate sign --profile intermediate-ca intermediate.csr companyroot/certs/root_ca.crt companyroot/secrets/root_ca_key > intermediate.crt
-```
 
-6. replace the default intermediates with the newly signed ones.
 
-```bash
-mv intermediate.crt intermediateca/certs/intermediate_ca.crt
-mv intermediate_ca_key intermediateca/secrets/intermediate_ca_key
-rm intermediate.csr
-```
+4. sign the intermediate with the companyroot ca.
+   1. if you are using the mock process run the following command
+      ```bash
+      step certificate sign --profile intermediate-ca intermediate.csr companyroot/certs/root_ca.crt companyroot/secrets/root_ca_key > intermediate.crt
+      ```
+    2. if you have an enterprise ca, follow one of the steps [here](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/#3-transfer-the-csr-file-and-get-it-signed) based on the provider.
 
-#### Create an intermediate from the enterprise root CA
+4. replace the default intermediates with the newly signed ones.
+   1. if you are using the mock process these below commands will work
+      ```bash
+      mv intermediate.crt intermediateca/certs/intermediate_ca.crt
+      mv intermediate_ca_key intermediateca/secrets/intermediate_ca_key
+      rm intermediate.csr
+      ```
+    2. if you had your enterprise ca sign it then take the returned intermediate.crt along with the key and move them to the right paths
+      ```bash
+      mv <returned cert> intermediateca/certs/intermediate_ca.crt
+      mv intermediate_ca_key intermediateca/secrets/intermediate_ca_key
+      ```
 
-**if you are using the above mock approach skip this step**
-
-We will be using the ["secure way"](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/#the-secure-way) laid out in the step-ca docs.
-
-1. follow the steps in the doc above.
-
-#### Generate necessary helm values
+### Generate necessary helm values
 
 
 1. add your provisioner and decrypt secrets to the sensitive values file. This will be the provisioner password and the ca password that should have been set during the previosu step. These are added under the `steps-ca` section.
@@ -257,7 +279,7 @@ ytt  --data-values-file tanzu-cli/values -f tanzu-cli/secrets/step-ca-issuer.yml
 tanzu tmc secret create -f generated/intermediate-ca-issuer-config.yml -s clustergroup
 ```
 
-### Bootstrap cluster with gitops
+## Bootstrap cluster with gitops
 
 This step configures the cluster group to use this git repo as the source for flux, specifically the `flux` folder. The gitops setup is done at the cluster group level so we don't need to individually bootstrap every cluster. This allows us to easily install things like cluster issuers,tap overlays, workloads and deliverables. Really it can be used to add anything to your clusters through gitops.  
 
@@ -284,7 +306,7 @@ at this point clusters should start syncing in multiple kustomizations. You can 
 kubectl get kustomizations -A
 ```
 
-### Create the static DNS records
+## Create the static DNS records
 
 Becuase we are using AVI for DNS, there is a step required to add some CNAME records into AVI. This is becuase the AVI DNS integration with AKO does not support wildcards. To get around this we will use the supported AKO L$ dns integration to create a dynamic A record and then create a static CNAME record that is a wildcard. Thsi way if the IP changes, AKO will update it and we don't need to manually update records.
 
