@@ -3,5 +3,4 @@ kind: Kustomization
 generatorOptions:
   disableNameSuffixHash: true
 
-resources:
-- ../../base/custom-workload-types
+resources: []

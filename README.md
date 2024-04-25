@@ -15,7 +15,7 @@ Here is a list of the things that this project does
 * handles acme challenges with http01 and auto dns from AVI
 * sets up Flux for gitops of everything
 * uses TMC opaque secrets as a simple secret provider
-* creates a custom workload type to take advantage of layer 7 ingress with AVI
+* uses carvel package supply chain to enable AVI l7 ingress for workloads with automated certs
 * deploys a sample workload using automated certs and dns provided by the above features
 
 ## Pre-reqs
