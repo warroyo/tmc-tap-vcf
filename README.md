@@ -23,6 +23,7 @@ Here is a list of the things that this project does
 
 * AVI configured with a DNS VS, [docs](https://avinetworks.com/docs/latest/avi-dns-architecture/#authoritative-name-server-for-a-subdomain-zone)
 * TKGs deployed with AVI + NSXT
+* Harbor install or some other registry
 
 ## Tools
 
