@@ -119,7 +119,7 @@ spec:
               service:
                 name:  #@ data.values.workload.metadata.name
                 port:
-                  number: 80
+                  number: 8080
     ---
     apiVersion: cert-manager.io/v1
     kind: Certificate
@@ -132,7 +132,7 @@ spec:
       secretName: #@ data.values.workload.metadata.name + "-ingress-cert"
       commonName: #@ data.values.workload.metadata.name + "." + "avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com"
       dnsNames:
-      - #@ data.values.workload.metadata.name + "." + "avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com"
+      - #@ data.values.workload.metadata.name
 
     #@ end
 
