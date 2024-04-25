@@ -8,7 +8,7 @@ spec:
  packageRef:
    refName: tanzu-java-web-app.dev.tap # name of the Package
    versionSelection:
-     constraints: 20240425174605.0.0 # version of the Package
+     constraints: 20240425174605.0.0+build.9c0a10c # version of the Package
  values:
  - secretRef:
      name: tanzu-java-web-app-values # Secret created in previous step
