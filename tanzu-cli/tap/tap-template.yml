@@ -86,7 +86,7 @@ spec:
       ootb_supply_chain_testing_scanning:
         carvel_package:
           workflow_enabled: true
-          gitops_subpath: flux/apps/base/packages
+          gitops_subpath: flux/packages/base
           openapiv3_enabled: true
         image_scanner_template_name: image-vulnerability-scan-trivy
         image_scanning_cli:
