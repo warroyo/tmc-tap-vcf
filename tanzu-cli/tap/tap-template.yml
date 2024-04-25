@@ -57,7 +57,6 @@ spec:
     inlineValues:
       amr:
         observer:
-          ca_cert_data: #@ data.read("certs/root_ca.crt")
           auth:
             kubernetes_service_accounts:
               enable: true
@@ -110,6 +109,7 @@ spec:
           server_address: https://github.com/
           credentials_secret: github-secret
       shared:
+        ca_cert_data: #@ data.read("certs/root_ca.crt")
         image_registry:
           project_path: #@ data.values.tap.profiles.build.registry.server + "/" + data.values.tap.profiles.build.registry.project
           secret:
