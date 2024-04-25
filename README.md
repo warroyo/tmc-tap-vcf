@@ -156,7 +156,7 @@ In this example we will mimic creating an intermediate CA that step CA will use 
 
 ### Generate intial CA to mimic enterpise CA
 
-<span style="color: red">**if you already have a CA skip this step**</span>
+**if you already have a CA skip this step**
 
 Be sure to save any generated passwords in these steps!
 
@@ -171,7 +171,9 @@ The above command has created our mock enterpsie CA
 
 ### Get the enterprise root CA
 
-<span style="color: red">**if you are using the above mock approach skip this step**</span>
+**if you are using the above mock approach skip this step**
+
+
 1. make directory structure 
 
 ```bash
