@@ -1,0 +1,70 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: tanzu-java-web-app.dev.tap.20240425171158.0.0+build.9c0a10c
+spec:
+  refName: tanzu-java-web-app.dev.tap
+  version: 20240425171158.0.0+build.9c0a10c
+  releaseNotes: |
+    Release v20240425171158.0.0+build.9c0a10c of package tanzu-java-web-app.dev.tap
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: dev.registry.pivotal.io/warroyo/workloads/tanzu-java-web-app-dev-bundle@sha256:fc540c3bbd8fc604a82b765aef24f93e378aca0a65ff4cff48b04115f08a3ae7
+      template:
+      - ytt:
+          paths:
+          - .
+      - kbld:
+          paths:
+          - .imgpkg/images.yml
+          - '-'
+      deploy:
+      - kapp: {}
+  valuesSchema:
+    openAPIv3:
+      type: object
+      additionalProperties: false
+      properties:
+        workload_name:
+          title: Workload name
+          type: string
+          default: ""
+        replicas:
+          title: Replicas
+          type: integer
+          default: 1
+        port:
+          title: Port
+          type: integer
+          default: 8080
+        hostname:
+          title: Hostname
+          type: string
+          default: ""
+        cluster_issuer:
+          title: Cluster Issuer
+          type: string
+          default: tap-ingress-selfsigned
+        http_route:
+          type: object
+          additionalProperties: false
+          nullable: true
+          properties:
+            gateways:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                properties:
+                  protocol:
+                    type: string
+                    default: ""
+                  name:
+                    type: string
+                    default: ""
+              default:
+              - protocol: https
+                name: default-gateway
+
