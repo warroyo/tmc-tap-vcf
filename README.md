@@ -16,7 +16,7 @@ Here is a list of the things that this project does
 * sets up Flux for gitops of everything
 * uses TMC opaque secrets as a simple secret provider
 * uses carvel package supply chain to enable AVI l7 ingress for workloads with automated certs
-* intergates package deploys with flux
+* integrates package deploys with flux
 * deploys a sample workload using automated certs and dns provided by the above features
 
 ## Pre-reqs
@@ -353,3 +353,15 @@ export TAP_NAME=$(cat tanzu-cli/values/values.yml| yq .tap.name)
 tanzu tmc tanzupackage tap get -n $TAP_NAME -o yaml | sed '1d' | ytt --data-values-file - --data-values-file tanzu-cli/values -f tanzu-cli/overlays/generation.yml -f intermediateca/. -f tanzu-cli/tap/tap-template.yml > generated/tap.yaml
 tanzu tmc tanzupackage tap update -n $TAP_NAME -f generated/tap.yaml
 ```
+
+## Deploy the sample app
+
+Becuase we are using carvel packages their needs to be some updates in the git repo in order to deploy the app. The current structure in the repo is setup for use with my carvel package in my repo. After running the supply chain, there will be a PR in your git repo to add the package. Follow the below steps to update the flux config to deploy the generated package.
+
+all updates will be made in `flux/packages/clusters/tap-run`
+
+1. update the `java-web-app-install.yml` file
+   1. update the `packageRef.versionSelection.constraints` to match your new package version
+   2. update the `hostname` in the values adn replace the base domain with your base domain.
+2. commit this and push to git
+3. flux will sync this into the run cluster and your app should be running
