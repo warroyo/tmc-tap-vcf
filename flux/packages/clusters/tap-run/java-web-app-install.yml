@@ -3,6 +3,8 @@ apiVersion: packaging.carvel.dev/v1alpha1
 kind: PackageInstall
 metadata:
  name: tanzu-java-web-app
+ annotations:
+    ext.packaging.carvel.dev/ytt-paths-from-secret-name.0: ingress-class-overlay
 spec:
  serviceAccountName: default # ServiceAccount on run cluster with permissions to deploy Package, see "Set up run Cluster Namespaces"
  packageRef:

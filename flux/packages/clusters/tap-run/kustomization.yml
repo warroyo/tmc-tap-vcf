@@ -7,3 +7,4 @@ namespace: dev
 resources:
 - ../../base/tanzu-java-web-app.dev.tap/packages/20240425174605.0.0.yml
 - java-web-app-install.yml
+- ingress-overlay.yml

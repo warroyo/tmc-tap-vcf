@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ingress-class-overlay
+stringData:
+  ingress-class.yml: |
+    #@ load("@ytt:overlay", "overlay")
+    #@overlay/match by=overlay.subset({"kind":"Ingress"}),expects="1+"
+    ---
+    metadata:
+      #@overlay/match missing_ok=True
+      annotations:
+        #@overlay/remove
+        kubernetes.io/ingress.class:
+    #@overlay/match missing_ok=True
+    spec:
+      #@overlay/match missing_ok=True
+      ingressClassName: avi-lb
