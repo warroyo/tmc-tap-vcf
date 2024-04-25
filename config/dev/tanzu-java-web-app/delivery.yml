@@ -152,6 +152,6 @@ spec:
   secretName: tanzu-java-web-app-ingress-cert
   commonName: tanzu-java-web-app
   dnsNames:
-  - tanzu-java-web-app
   - tanzu-java-web-app.avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+  - tanzu-java-web-app
 
