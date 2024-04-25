@@ -155,36 +155,27 @@ Through the gitops process above we will be installing a few supporting services
 
 In this example we will mimic creating an intermediate CA that step CA will use to sign and issue certs. In an enterprise environment usually there is already an existing CA, this process will be used to securely authorize step-ca to create certs on it's behalf. All of the details can be found [here](https://smallstep.com/docs/tutorials/intermediate-ca-new-ca/). You can skip the first piece of creating the intial CA if you already have a corporate CA.
 
-### Generate intial CA to mimic enterpise CA
-
-**if you already have a CA skip this step**
-
-Be sure to save any generated passwords in these steps!
-
-1. run the below command and let it generate a password for you. This will generate our fake root cert to mimic an enterpise cert.
-```bash
-export STEPPATH=./companyroot
-step ca init  --deployment-type='standalone' --name='companyroot' --dns='localhost' --address='127.0.0.1:8443' --provisioner='admin@company.com' 
-```
-
-The above command has created our mock enterpsie CA
-
-
 ### Get the enterprise root CA
 
-**if you are using the above mock approach skip this step**
-
+Be sure to save any generated passwords in these steps!
 
 1. make directory structure 
 
 ```bash
 mkdir -p companyroot/certs
 ```
-2. copy your compnay root cert into the directory
 
-```bash
-cp companyca.crt companyroot/certs/root_ca.crt
-```
+2. get the enterprise CA cert
+   1. if you do not have a real enterprise CA, run the below command and let it generate a password for you. This will generate our fake root cert to mimic an enterpise cert.
+    ```bash
+    export STEPPATH=./companyroot
+    step ca init  --deployment-type='standalone' --name='companyroot' --dns='localhost' --address='127.0.0.1:8443' --provisioner='admin@company.com' 
+    ```
+   2. if you do have a enterprise root, copy your compnay root cert into the directory
+
+    ```bash
+    cp companyca.crt companyroot/certs/root_ca.crt
+    ```
 
 ### Create the new intermediate from the root
 
