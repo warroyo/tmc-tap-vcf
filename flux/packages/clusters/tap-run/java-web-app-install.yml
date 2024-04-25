@@ -1,0 +1,28 @@
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+ name: tanzu-java-web-app
+spec:
+ serviceAccountName: default # ServiceAccount on run cluster with permissions to deploy Package, see "Set up run Cluster Namespaces"
+ packageRef:
+   refName: tanzu-java-web-app.dev.tap # name of the Package
+   versionSelection:
+     constraints: 20240425174605.0.0 # version of the Package
+ values:
+ - secretRef:
+     name: tanzu-java-web-app-values # Secret created in previous step
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+ name: tanzu-java-web-app-values
+stringData:
+ values.yaml: |
+   ---
+   workload_name: tanzu-java-web-app
+   replicas: 2
+   hostname: tanzu-java-web-app.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+   port: 8080
+   cluster_issuer: step-ca-avi

@@ -2,7 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 generatorOptions:
   disableNameSuffixHash: true
+namespace: dev
 
 resources:
-- ../../base/packages
-- placeholder-secrets.yml
+- ../../base/tanzu-java-web-app.dev.tap/packages/20240425174605.0.0.yml
+- java-web-app-install.yml
