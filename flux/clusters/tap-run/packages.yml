@@ -2,7 +2,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: cluster-apps
+  name: package-installs
   namespace: tanzu-continuousdelivery-resources
 spec:
   interval: 2m
@@ -11,9 +11,6 @@ spec:
   postBuild:
     substitute:
       cluster_name: ${cluster_name}
-    substituteFrom:
-      - kind: Secret
-        name: step-ca-issuer-config
   sourceRef:
     kind: GitRepository
     namespace: tanzu-continuousdelivery-resources

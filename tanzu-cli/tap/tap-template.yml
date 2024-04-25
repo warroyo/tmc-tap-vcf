@@ -88,6 +88,7 @@ spec:
           workflow_enabled: true
           gitops_subpath: flux/packages/base
           openapiv3_enabled: true
+
         image_scanner_template_name: image-vulnerability-scan-trivy
         image_scanning_cli:
           image: registry.tanzu.vmware.com/vmware-tap-packages/tap-packages@sha256:31d36a8582a75b042dc12aea0808f822e27747a2f8103af0f0c52ef8d68a8bf0
@@ -98,8 +99,6 @@ spec:
           cluster_config_template_name: server-template
         - type: worker
           cluster_config_template_name: worker-template
-        - type: avi-web
-          cluster_config_template_name: avi-web-template
 
         gitops:
           commit_strategy: pull_request
