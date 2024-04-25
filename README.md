@@ -2,10 +2,26 @@
 
 This guide's purpose is to quickly stand up TAP using TMC in a VCF environment. This will include dependent resources like DNS and cert management. 
 
+## What it does
+
+Here is a list of the things that this project does
+
+* install AKO in all clusters
+* installs step-ca in view cluster to be a centralized self hosted intermdiate acme server for a enterprise root
+* installs TAP using TMC
+* configures automatic DNS on all TAP components with ingress using AVI DNS
+* configures cert manager to use the self hosted acme server
+* generates all certs automatically using the self hosted acme server
+* handles acme challenges with http01 and auto dns from AVI
+* sets up Flux for gitops of everything
+* uses TMC opaque secrets as a simple secret provider
+* creates a custom workload type to take advantage of layer 7 ingress with AVI
+* deploys a sample workload using automated certs and dns provided by the above features
 
 ## Pre-reqs
 
-* AVI configured with a DNS VS
+* AVI configured with a DNS VS, [docs](https://avinetworks.com/docs/latest/avi-dns-architecture/#authoritative-name-server-for-a-subdomain-zone)
+* TKGs deployed with AVI + NSXT
 
 ## Tools
 
@@ -333,6 +349,6 @@ You can change the values in the values.yml and update the solution through the 
 
 ```bash
 export TAP_NAME=$(cat tanzu-cli/values/values.yml| yq .tap.name)
-tanzu tmc tanzupackage tap get -n $TAP_NAME -o yaml | sed '1d' | ytt --data-values-file - --data-values-file tanzu-cli/values -f tanzu-cli/overlays/generation.yml -f tanzu-cli/tap/tap-template.yml > generated/tap.yaml
+tanzu tmc tanzupackage tap get -n $TAP_NAME -o yaml | sed '1d' | ytt --data-values-file - --data-values-file tanzu-cli/values -f tanzu-cli/overlays/generation.yml -f intermediateca/. -f tanzu-cli/tap/tap-template.yml > generated/tap.yaml
 tanzu tmc tanzupackage tap update -n $TAP_NAME -f generated/tap.yaml
 ```

@@ -130,9 +130,9 @@ spec:
         kind: ClusterIssuer
         name: step-ca-avi
       secretName: #@ data.values.workload.metadata.name + "-ingress-cert"
-      commonName: #@ data.values.params.vshost
+      commonName: #@ data.values.workload.metadata.name + "." + "avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com"
       dnsNames:
-      - #@ data.values.params.vshost
+      - #@ data.values.workload.metadata.name + "." + "avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com"
 
     #@ end
 

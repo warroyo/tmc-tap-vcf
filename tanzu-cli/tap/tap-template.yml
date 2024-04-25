@@ -1,4 +1,5 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
 
 
 fullName:
@@ -56,6 +57,7 @@ spec:
     inlineValues:
       amr:
         observer:
+          ca_cert_data: #@ data.read("certs/root_ca.crt")
           auth:
             kubernetes_service_accounts:
               enable: true
@@ -65,15 +67,6 @@ spec:
       deployed_through_tmc: true
       excluded_packages:
       - fluxcd.source.controller.tanzu.vmware.com
-      grype:
-        metadataStore:
-          authSecret:
-            importFromNamespace: metadata-store-secrets
-            name: store-auth-token
-          caSecret:
-            importFromNamespace: metadata-store-secrets
-            name: store-ca-cert
-          url: #@ "https://metadata-store." + data.values.tap.profiles.view.ingress_domain + "." + data.values.base_domain
       namespace_provisioner:
         additional_sources:
         - git:
@@ -92,6 +85,9 @@ spec:
           url: #@ data.values.gitrepo
       supply_chain: "testing_scanning"
       ootb_supply_chain_testing_scanning:
+        image_scanner_template_name: image-vulnerability-scan-trivy
+        image_scanning_cli:
+          image: registry.tanzu.vmware.com/vmware-tap-packages/tap-packages@sha256:31d36a8582a75b042dc12aea0808f822e27747a2f8103af0f0c52ef8d68a8bf0
         supported_workloads:
         - type: web
           cluster_config_template_name: config-template
