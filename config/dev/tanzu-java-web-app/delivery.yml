@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tanzu-java-web-app
+  annotations:
+    kapp.k14s.io/update-strategy: fallback-on-replace
+    ootb.apps.tanzu.vmware.com/servicebinding-workload: "true"
+    kapp.k14s.io/change-rule: upsert after upserting servicebinding.io/ServiceBindings
+  labels:
+    app.kubernetes.io/part-of: tanzu-java-web-app
+    apps.tanzu.vmware.com/has-tests: "true"
+    apps.tanzu.vmware.com/workload-type: avi-web
+    kustomize.toolkit.fluxcd.io/name: cluster-gitops
+    kustomize.toolkit.fluxcd.io/namespace: tanzu-continuousdelivery-resources
+    app.kubernetes.io/component: run
+    carto.run/workload-name: tanzu-java-web-app
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: run
+      app.kubernetes.io/part-of: tanzu-java-web-app
+      apps.tanzu.vmware.com/auto-configure-actuators: "false"
+      apps.tanzu.vmware.com/has-tests: "true"
+      apps.tanzu.vmware.com/workload-type: avi-web
+      carto.run/workload-name: tanzu-java-web-app
+      conventions.carto.run/framework: spring-boot
+      kustomize.toolkit.fluxcd.io/name: cluster-gitops
+      kustomize.toolkit.fluxcd.io/namespace: tanzu-continuousdelivery-resources
+      tanzu.app.live.view: "true"
+      tanzu.app.live.view.application.actuator.path: actuator
+      tanzu.app.live.view.application.actuator.port: "8080"
+      tanzu.app.live.view.application.flavours: spring-boot
+      tanzu.app.live.view.application.name: tanzu-java-web-app
+  template:
+    metadata:
+      annotations:
+        apps.tanzu.vmware.com/correlationid: https://github.com/warroyo/tanzu-java-web-app-gitops?sub_path=/
+        autoscaling.knative.dev/minScale: "1"
+        boot.spring.io/version: 2.5.14
+        conventions.carto.run/applied-conventions: |-
+          spring-boot-convention/auto-configure-actuators-check
+          spring-boot-convention/is-native-app-check
+          spring-boot-convention/is-prometheus-enabled-check
+          spring-boot-convention/spring-boot
+          spring-boot-convention/spring-boot-graceful-shutdown
+          spring-boot-convention/spring-boot-web
+          spring-boot-convention/spring-boot-actuator
+          spring-boot-convention/app-live-view-appflavour-check
+          spring-boot-convention/app-live-view-connector-boot
+          spring-boot-convention/app-live-view-appflavours-boot
+        developer.conventions/target-containers: workload
+      labels:
+        app.kubernetes.io/component: run
+        app.kubernetes.io/part-of: tanzu-java-web-app
+        apps.tanzu.vmware.com/auto-configure-actuators: "false"
+        apps.tanzu.vmware.com/has-tests: "true"
+        apps.tanzu.vmware.com/workload-type: avi-web
+        carto.run/workload-name: tanzu-java-web-app
+        conventions.carto.run/framework: spring-boot
+        kustomize.toolkit.fluxcd.io/name: cluster-gitops
+        kustomize.toolkit.fluxcd.io/namespace: tanzu-continuousdelivery-resources
+        tanzu.app.live.view: "true"
+        tanzu.app.live.view.application.actuator.path: actuator
+        tanzu.app.live.view.application.actuator.port: "8080"
+        tanzu.app.live.view.application.flavours: spring-boot
+        tanzu.app.live.view.application.name: tanzu-java-web-app
+    spec:
+      containers:
+      - env:
+        - name: JAVA_TOOL_OPTIONS
+          value: -Dserver.port="8080" -Dserver.shutdown.grace-period="24s"
+        image: dev.registry.pivotal.io/warroyo/workloads/tanzu-java-web-app-dev@sha256:3d5bb56687ef9d9275d9f27b1c04ebca28dc58fa301c918c951b80fbc4aaf39a
+        name: workload
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+      serviceAccountName: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tanzu-java-web-app
+  labels:
+    app.kubernetes.io/part-of: tanzu-java-web-app
+    apps.tanzu.vmware.com/has-tests: "true"
+    apps.tanzu.vmware.com/workload-type: avi-web
+    kustomize.toolkit.fluxcd.io/name: cluster-gitops
+    kustomize.toolkit.fluxcd.io/namespace: tanzu-continuousdelivery-resources
+    app.kubernetes.io/component: run
+    carto.run/workload-name: tanzu-java-web-app
+spec:
+  selector:
+    app.kubernetes.io/component: run
+    app.kubernetes.io/part-of: tanzu-java-web-app
+    apps.tanzu.vmware.com/auto-configure-actuators: "false"
+    apps.tanzu.vmware.com/has-tests: "true"
+    apps.tanzu.vmware.com/workload-type: avi-web
+    carto.run/workload-name: tanzu-java-web-app
+    conventions.carto.run/framework: spring-boot
+    kustomize.toolkit.fluxcd.io/name: cluster-gitops
+    kustomize.toolkit.fluxcd.io/namespace: tanzu-continuousdelivery-resources
+    tanzu.app.live.view: "true"
+    tanzu.app.live.view.application.actuator.path: actuator
+    tanzu.app.live.view.application.actuator.port: "8080"
+    tanzu.app.live.view.application.flavours: spring-boot
+    tanzu.app.live.view.application.name: tanzu-java-web-app
+  ports:
+  - targetPort: 8080
+    port: 8080
+    name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tanzu-java-web-app-ingress
+spec:
+  ingressClassName: avi-lb
+  tls:
+  - hosts:
+    - https-example.foo.com
+    secretName: tanzu-java-web-app-ingress-cert
+  rules:
+  - host: tanzu-java-web-app.avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tanzu-java-web-app
+            port:
+              number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tanzu-java-web-app-cert
+spec:
+  issuerRef:
+    kind: ClusterIssuer
+    name: step-ca-avi
+  secretName: tanzu-java-web-app-ingress-cert
+  commonName: tanzu-java-web-app.avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+  dnsNames:
+  - tanzu-java-web-app.avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+
