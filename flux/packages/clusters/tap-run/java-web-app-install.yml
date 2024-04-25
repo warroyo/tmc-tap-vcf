@@ -23,6 +23,6 @@ stringData:
    ---
    workload_name: tanzu-java-web-app
    replicas: 2
-   hostname: tanzu-java-web-app.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+   hostname: tanzu-java-web-app.apps.tap-vcf.h2o-4-20916.h2o.vmware.com
    port: 8080
    cluster_issuer: step-ca-avi
