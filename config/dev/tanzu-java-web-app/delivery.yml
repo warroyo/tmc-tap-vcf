@@ -139,7 +139,7 @@ spec:
           service:
             name: tanzu-java-web-app
             port:
-              number: 80
+              number: 8080
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -152,5 +152,5 @@ spec:
   secretName: tanzu-java-web-app-ingress-cert
   commonName: tanzu-java-web-app.avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
   dnsNames:
-  - tanzu-java-web-app.avi.tap-run.tap-vcf.h2o-4-20916.h2o.vmware.com
+  - tanzu-java-web-app
 
