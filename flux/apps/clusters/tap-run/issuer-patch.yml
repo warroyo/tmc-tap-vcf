@@ -10,3 +10,4 @@ spec:
     - http01:
         ingress:
           ingressClassName: avi-lb
+          serviceType: ClusterIP
