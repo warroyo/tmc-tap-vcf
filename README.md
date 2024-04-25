@@ -7,7 +7,7 @@ This guide's purpose is to quickly stand up TAP using TMC in a VCF environment. 
 Here is a list of the things that this project does
 
 * install AKO in all clusters
-* installs step-ca in view cluster to be a centralized self hosted intermdiate acme server for a enterprise root
+* installs [step-ca](https://smallstep.com/docs/step-ca/) in view cluster to be a centralized self hosted intermdiate acme server for a enterprise root
 * installs TAP using TMC
 * configures automatic DNS on all TAP components with ingress using AVI DNS
 * configures cert manager to use the self hosted acme server
@@ -40,7 +40,7 @@ First we need to create some clusters and setup our intial gitops repo.
 
 This creates the intiial cluster group that all of the tap clusters will be part of and is the base for our gitops setup.
 
-```
+```bash
 ytt --data-values-file tanzu-cli/values -f tanzu-cli/cluster-group/cg-template.yml | tanzu tmc clustergroup create -f-
 ```
 

@@ -9,3 +9,6 @@ secrets:
     provisioner_pass: 
     ca_pass:
     ca_data: 
+  registry:
+    user: 
+    password:
